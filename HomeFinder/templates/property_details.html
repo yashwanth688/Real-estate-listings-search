@@ -1,0 +1,227 @@
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var mapEl = document.getElementById('map');
+        if (mapEl) {
+            var location = mapEl.getAttribute('data-location');
+            // Fallback default coordinates
+            var map = L.map('map').setView([40.7128, -74.0060], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+            
+            // Geocode using Nominatim API
+            fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(location))
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        var lat = data[0].lat;
+                        var lon = data[0].lon;
+                        map.setView([lat, lon], 14);
+                        L.marker([lat, lon]).addTo(map).bindPopup(location).openPopup();
+                    }
+                });
+        }
+    });
+</script>
+{% endblock %}{% extends 'base.html' %}
+
+{% block title %}{{ property.title }} - HomeFinder{% endblock %}
+
+{% block content %}
+<div class="container section">
+
+    <!-- Back Button -->
+    <div class="property-header-actions">
+        <a href="{{ url_for('listings') }}" class="back-link">
+            <i data-lucide="arrow-left"></i> Back to Listings
+        </a>
+    </div>
+
+    <div class="property-details-layout">
+
+        <!-- ── Main Content ────────────────────────────── -->
+        <div class="property-main">
+
+            <!-- Hero Image -->
+            <div class="property-hero-image">
+                <img src="{{ property.image_url }}" alt="{{ property.title }}"
+                     onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80'">
+                <span class="badge badge-{{ property.status|lower }} badge-large">{{ property.status }}</span>
+            </div>
+
+            <!-- Title + Price Row -->
+            <div class="property-header-info">
+                <div class="title-section">
+                    <h1>{{ property.title }}</h1>
+                    <p class="property-location text-muted">
+                        <i data-lucide="map-pin"></i> {{ property.location }}
+                    </p>
+                </div>
+                <div class="price-section">
+                    <div class="property-price-large">{{ property.price | currency }}</div>
+                    {% if current_user %}
+                        <form action="{{ url_for('toggle_favorite', id=property.id) }}" method="POST">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit"
+                                class="btn {% if is_favorite %}btn-danger{% else %}btn-outline{% endif %}">
+                                <i data-lucide="heart" {% if is_favorite %}fill="currentColor"{% endif %}></i>
+                                {% if is_favorite %}Saved{% else %}Save{% endif %}
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Key Feature Boxes -->
+            <div class="property-key-features">
+                <div class="feature-box">
+                    <i data-lucide="home"></i>
+                    <span>Type</span>
+                    <strong>{{ property.property_type }}</strong>
+                </div>
+                <div class="feature-box">
+                    <i data-lucide="bed"></i>
+                    <span>Bedrooms</span>
+                    <strong>{{ property.bedrooms }}</strong>
+                </div>
+                <div class="feature-box">
+                    <i data-lucide="bath"></i>
+                    <span>Bathrooms</span>
+                    <strong>{{ property.bathrooms }}</strong>
+                </div>
+                <div class="feature-box">
+                    <i data-lucide="maximize"></i>
+                    <span>Area</span>
+                    <strong>{{ property.area }} sqft</strong>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="property-map box-panel mt-4">
+    <h3>Location Map</h3>
+    <div id="map" style="height: 300px; width: 100%; border-radius: 8px; z-index: 1;" data-location="{{ property.location }}"></div>
+</div>
+<div class="property-description box-panel mt-4">
+                <h3>Description</h3>
+                <p>{{ property.description }}</p>
+            </div>
+
+            <!-- Amenities -->
+            {% if property.amenities %}
+            <div class="property-amenities box-panel mt-4">
+                <h3>Amenities & Features</h3>
+                <ul class="amenities-list">
+                    {% for amenity in property.amenities.split(',') %}
+                        <li><i data-lucide="check-circle"></i> {{ amenity.strip() }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- Similar Properties -->
+            {% if similar %}
+            <div class="mt-4">
+                <h3 class="mb-4">Similar Properties</h3>
+                <div class="property-grid">
+                    {% for p in similar %}
+                    <div class="property-card">
+                        <div class="property-image">
+                            <img src="{{ p.image_url }}" alt="{{ p.title }}"
+                                 onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80'">
+                            <span class="badge badge-{{ p.status|lower }}">{{ p.status }}</span>
+                        </div>
+                        <div class="property-content">
+                            <div class="property-price">{{ p.price | currency }}</div>
+                            <h3 class="property-title">
+                                <a href="{{ url_for('property_details', id=p.id) }}">{{ p.title }}</a>
+                            </h3>
+                            <p class="property-location"><i data-lucide="map-pin"></i> {{ p.location }}</p>
+                            <div class="property-meta">
+                                <span><i data-lucide="bed"></i> {{ p.bedrooms }}</span>
+                                <span><i data-lucide="bath"></i> {{ p.bathrooms }}</span>
+                                <span><i data-lucide="maximize"></i> {{ p.area }} sqft</span>
+                            </div>
+                        </div>
+                        <div class="property-footer">
+                            <span>{{ p.property_type }}</span>
+                            <a href="{{ url_for('property_details', id=p.id) }}" class="btn btn-outline btn-sm">View</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+
+        <!-- ── Sidebar ─────────────────────────────────── -->
+        <div class="property-sidebar">
+            <div class="agent-card box-panel">
+
+                <h3>Contact Agent</h3>
+                <div class="agent-info">
+                    <div class="agent-avatar">
+                        <i data-lucide="user"></i>
+                    </div>
+                    <div class="agent-details">
+                        <h4>{{ agent.name }}</h4>
+                        <p><i data-lucide="phone"></i> {{ agent.phone }}</p>
+                        <p><i data-lucide="mail"></i>  {{ agent.email }}</p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <h4>Send an Inquiry</h4>
+                <form action="{{ url_for('inquire', id=property.id) }}" method="POST" class="inquiry-form">
+                    {{ form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ form.name(placeholder="Your Name *") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.email(placeholder="Your Email *") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.phone(placeholder="Your Phone") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.message(placeholder="I am interested in this property...", rows="4") }}
+                    </div>
+                    {{ form.submit(class="btn btn-primary btn-block") }}
+                </form>
+
+            </div>
+
+            <!-- Quick Info Card -->
+            <div class="box-panel mt-4">
+                <h3>Quick Info</h3>
+                <table style="width:100%; border-collapse:collapse; font-size:0.95rem;">
+                    <tr style="border-bottom:1px solid var(--border-color);">
+                        <td style="padding:0.6rem 0; color:var(--text-muted);">Status</td>
+                        <td><span class="badge badge-{{ property.status|lower }}">{{ property.status }}</span></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid var(--border-color);">
+                        <td style="padding:0.6rem 0; color:var(--text-muted);">Type</td>
+                        <td><strong>{{ property.property_type }}</strong></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid var(--border-color);">
+                        <td style="padding:0.6rem 0; color:var(--text-muted);">Bedrooms</td>
+                        <td><strong>{{ property.bedrooms }}</strong></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid var(--border-color);">
+                        <td style="padding:0.6rem 0; color:var(--text-muted);">Bathrooms</td>
+                        <td><strong>{{ property.bathrooms }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td style="padding:0.6rem 0; color:var(--text-muted);">Area</td>
+                        <td><strong>{{ property.area }} sqft</strong></td>
+                    </tr>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

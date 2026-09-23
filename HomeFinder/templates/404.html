@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Page Not Found - HomeFinder{% endblock %}
+
+{% block content %}
+<div class="container section text-center error-page">
+    <div class="error-content box-panel" style="max-width: 500px; margin: 0 auto;">
+        <i data-lucide="alert-triangle" style="width: 64px; height: 64px; color: var(--danger-color); margin-bottom: 1rem;"></i>
+        <h1 style="font-size: 4rem; color: var(--primary-color); margin: 0;">404</h1>
+        <h2>Page Not Found</h2>
+        <p class="text-muted my-4">The page you are looking for doesn't exist or has been moved.</p>
+        <a href="{{ url_for('index') }}" class="btn btn-primary">Return Home</a>
+    </div>
+</div>
+{% endblock %}

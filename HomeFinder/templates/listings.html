@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}{{ title|default('All Properties') }} — HomeFinder{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="container">
+    <h1>{{ title|default('Browse Properties') }}</h1>
+    <p>Find the perfect property across India's top cities.</p>
+  </div>
+</div>
+
+<div class="container section">
+  <div class="listings-layout">
+
+    <!-- ── Sidebar Filters ─────────────────────────────────── -->
+    <aside class="filters-sidebar">
+      <div class="filter-card">
+        <h3><i data-lucide="sliders-horizontal" style="width:18px;height:18px;display:inline;margin-right:6px;"></i>Filter Results</h3>
+
+        <form action="{{ url_for('listings') }}" method="GET">
+
+          <div class="form-group">
+            <label>Keyword</label>
+            <input type="text" name="keyword" value="{{ request.args.get('keyword','') }}" placeholder="e.g. modern, pool...">
+          </div>
+
+          <div class="form-group">
+            <label>City / Location</label>
+            <input type="text" name="location" value="{{ request.args.get('location','') }}" placeholder="Mumbai, Delhi...">
+          </div>
+
+          <div class="form-group">
+            <label>Property Type</label>
+            <select name="type">
+              <option value="">All Types</option>
+              {% for t in ['Apartment','House','Villa','Commercial'] %}
+                <option value="{{ t }}" {% if request.args.get('type')==t %}selected{% endif %}>{{ t }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Status</label>
+            <select name="status">
+              <option value="">Any</option>
+              <option value="Sale" {% if request.args.get('status')=='Sale' %}selected{% endif %}>For Sale</option>
+              <option value="Rent" {% if request.args.get('status')=='Rent' %}selected{% endif %}>For Rent</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group half">
+              <label>Min &#x20B9;</label>
+              <input type="number" name="min_price" value="{{ request.args.get('min_price','') }}" placeholder="0">
+            </div>
+            <div class="form-group half">
+              <label>Max &#x20B9;</label>
+              <input type="number" name="max_price" value="{{ request.args.get('max_price','') }}" placeholder="Any">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Sort By</label>
+            <select name="sort">
+              <option value="newest" {% if request.args.get('sort','newest')=='newest' %}selected{% endif %}>Newest First</option>
+              <option value="price_asc" {% if request.args.get('sort')=='price_asc' %}selected{% endif %}>Price: Low to High</option>
+              <option value="price_desc" {% if request.args.get('sort')=='price_desc' %}selected{% endif %}>Price: High to Low</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">
+            <i data-lucide="search"></i> Apply Filters
+          </button>
+          <a href="{{ url_for('listings') }}" class="btn btn-outline btn-block mt-2" style="justify-content:center;">
+            <i data-lucide="x"></i> Clear All
+          </a>
+        </form>
+      </div>
+    </aside>
+
+    <!-- ── Results ─────────────────────────────────────────── -->
+    <div class="listings-content">
+      <div class="results-meta">
+        <i data-lucide="home" style="width:15px;height:15px;display:inline;"></i>
+        Showing <strong>{{ properties|length }}</strong> properties
+        {% if request.args.get('location') %} in <strong>{{ request.args.get('location') }}</strong>{% endif %}
+      </div>
+
+      <div class="property-grid">
+        {% for p in properties %}
+        <div class="property-card">
+          <div class="property-image">
+            <img src="{{ p.image_url }}" alt="{{ p.title }}"
+                 onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80'">
+            <span class="badge badge-{{ p.status|lower }}">{{ p.status }}</span>
+            <div class="premium-tag"><i data-lucide="star"></i> Premium</div>
+          </div>
+          <div class="property-content">
+            <div class="property-price">{{ p.price | currency }}</div>
+            <h3 class="property-title">
+              <a href="{{ url_for('property_details', id=p.id) }}">{{ p.title }}</a>
+            </h3>
+            <p class="property-location"><i data-lucide="map-pin"></i> {{ p.location }}</p>
+            <div class="property-meta">
+              <span><i data-lucide="bed"></i> {{ p.bedrooms }}</span>
+              <span><i data-lucide="bath"></i> {{ p.bathrooms }}</span>
+              <span><i data-lucide="maximize"></i> {{ p.area }} sqft</span>
+            </div>
+          </div>
+          <div class="property-footer">
+            <span class="badge badge-outline">{{ p.property_type }}</span>
+            <a href="{{ url_for('property_details', id=p.id) }}" class="btn btn-primary btn-sm">Details</a>
+          </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <i data-lucide="search-x" class="empty-icon"></i>
+          <h3>No properties found</h3>
+          <p>Try different keywords or remove some filters to see more results.</p>
+          <a href="{{ url_for('listings') }}" class="btn btn-primary mt-3">Clear All Filters</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

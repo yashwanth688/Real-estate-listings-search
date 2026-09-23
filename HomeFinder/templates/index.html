@@ -1,0 +1,337 @@
+{% extends 'base.html' %}
+{% block title %}HomeFinder — Find Premium-Friendly Homes Across India{% endblock %}
+
+{% block content %}
+
+<!-- ═══════════════════════════════════════════════════════════
+     HERO SECTION
+     ═══════════════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-bg-image"></div>
+  <div class="container hero-content">
+
+    <div class="hero-eyebrow">
+      <i data-lucide="star"></i>
+      India's #1 Premium-Friendly Real Estate Platform
+    </div>
+
+    <h1>
+      Find a Home That's<br>
+      Good for You &amp;<br>
+      <span class="highlight">The Planet</span>
+    </h1>
+
+    <p class="hero-desc">
+      Discover verified apartments, villas, and houses across India's top cities.
+      Every listing is screened for quality, sustainability, and value.
+    </p>
+
+    <!-- Search Card -->
+    <div class="hero-search-card">
+      <div class="search-tabs">
+        <button class="search-tab active" onclick="setTab(this,'Sale')">Buy</button>
+        <button class="search-tab" onclick="setTab(this,'Rent')">Rent</button>
+        <button class="search-tab" onclick="setTab(this,'')">All</button>
+      </div>
+      <form action="{{ url_for('listings') }}" method="GET" id="heroSearchForm">
+        <input type="hidden" name="status" id="statusInput" value="Sale">
+        <div class="search-form-row">
+          <div class="search-field">
+            <label>Location / City</label>
+            <input type="text" name="location" placeholder="Mumbai, Delhi, Bengaluru...">
+          </div>
+          <div class="search-field">
+            <label>Property Type</label>
+            <select name="type">
+              <option value="">All Types</option>
+              <option value="Apartment">Apartment</option>
+              <option value="House">House</option>
+              <option value="Villa">Villa</option>
+              <option value="Commercial">Commercial</option>
+            </select>
+          </div>
+          <div class="search-field">
+            <label>Max Budget (&#x20B9;)</label>
+            <input type="number" name="max_price" placeholder="e.g. 5000000">
+          </div>
+          <div>
+            <button type="submit" class="btn btn-primary btn-lg" style="border-radius:12px;width:100%;">
+              <i data-lucide="search"></i> Search
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Quick Stats Below Hero -->
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="num">54+</div>
+        <div class="lbl">Verified Listings</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">10+</div>
+        <div class="lbl">Cities Covered</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">100%</div>
+        <div class="lbl">Verified Agents</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">4.9★</div>
+        <div class="lbl">Average Rating</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     STATS STRIP
+     ═══════════════════════════════════════════════════════════ -->
+<div class="stats-strip">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="num counter" data-target="54">0</div>
+        <div class="lbl">Properties Listed</div>
+      </div>
+      <div class="stat-box">
+        <div class="num counter" data-target="10">0</div>
+        <div class="lbl">Cities Covered</div>
+      </div>
+      <div class="stat-box">
+        <div class="num counter" data-target="200">0</div>
+        <div class="lbl">Happy Families</div>
+      </div>
+      <div class="stat-box">
+        <div class="num counter" data-target="15">0</div>
+        <div class="lbl">Trusted Agents</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PROPERTY CATEGORIES
+     ═══════════════════════════════════════════════════════════ -->
+<section class="section bg-light">
+  <div class="container">
+    <div class="text-center reveal">
+      <span class="section-label">Browse by Type</span>
+      <h2 class="section-title">Find Your Perfect Property</h2>
+      <p class="section-sub">Explore thousands of listings across every property category in India's top cities.</p>
+    </div>
+
+    <div class="categories-grid reveal">
+      <a href="{{ url_for('listings', type='Apartment') }}" class="category-card">
+        <div class="cat-icon"><i data-lucide="building-2"></i></div>
+        <div class="cat-label">Apartments</div>
+        <div class="cat-count">Modern flats &amp; high-rises</div>
+      </a>
+      <a href="{{ url_for('listings', type='House') }}" class="category-card">
+        <div class="cat-icon"><i data-lucide="home"></i></div>
+        <div class="cat-label">Houses</div>
+        <div class="cat-count">Independent &amp; row homes</div>
+      </a>
+      <a href="{{ url_for('listings', type='Villa') }}" class="category-card">
+        <div class="cat-icon"><i data-lucide="castle"></i></div>
+        <div class="cat-label">Villas</div>
+        <div class="cat-count">Luxury &amp; premium villas</div>
+      </a>
+      <a href="{{ url_for('listings', type='Commercial') }}" class="category-card">
+        <div class="cat-icon"><i data-lucide="briefcase"></i></div>
+        <div class="cat-label">Commercial</div>
+        <div class="cat-count">Offices &amp; retail spaces</div>
+      </a>
+      <a href="{{ url_for('listings', status='Rent') }}" class="category-card">
+        <div class="cat-icon"><i data-lucide="key"></i></div>
+        <div class="cat-label">For Rent</div>
+        <div class="cat-count">Affordable monthly rentals</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     FEATURED PROPERTIES
+     ═══════════════════════════════════════════════════════════ -->
+<section class="section">
+  <div class="container">
+    <div class="d-flex justify-between align-center mb-4 reveal">
+      <div>
+        <span class="section-label">Latest Listings</span>
+        <h2 class="section-title" style="margin-bottom:0">Recently Added Properties</h2>
+      </div>
+      <a href="{{ url_for('listings') }}" class="btn btn-outline">
+        View All <i data-lucide="arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="property-grid">
+      {% for p in properties %}
+      <div class="property-card reveal">
+        <div class="property-image">
+          <img src="{{ p.image_url }}" alt="{{ p.title }}"
+               onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80'">
+          <span class="badge badge-{{ p.status|lower }}">{{ p.status }}</span>
+          <div class="premium-tag"><i data-lucide="star"></i> Premium Property</div>
+        </div>
+        <div class="property-content">
+          <div class="property-price">{{ p.price | currency }}</div>
+          <h3 class="property-title">
+            <a href="{{ url_for('property_details', id=p.id) }}">{{ p.title }}</a>
+          </h3>
+          <p class="property-location"><i data-lucide="map-pin"></i> {{ p.location }}</p>
+          <div class="property-meta">
+            <span><i data-lucide="bed"></i> {{ p.bedrooms }} Beds</span>
+            <span><i data-lucide="bath"></i> {{ p.bathrooms }} Baths</span>
+            <span><i data-lucide="maximize"></i> {{ p.area }} sqft</span>
+          </div>
+        </div>
+        <div class="property-footer">
+          <span class="badge badge-outline">{{ p.property_type }}</span>
+          <a href="{{ url_for('property_details', id=p.id) }}" class="btn btn-primary btn-sm">View Details</a>
+        </div>
+      </div>
+      {% else %}
+      <div class="empty-state" style="grid-column:1/-1">
+        <p>No properties available yet.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ECO BANNER
+     ═══════════════════════════════════════════════════════════ -->
+<section class="section-sm">
+  <div class="container">
+    <div class="premium-banner reveal">
+      <div class="premium-banner-icon">🌿</div>
+      <div>
+        <h2>We Care About the Planet</h2>
+        <p>HomeFinder is committed to promoting eco-friendly and sustainable housing. Every property on our platform is evaluated for energy efficiency, green spaces, and environmental impact.</p>
+        <a href="{{ url_for('about') }}" class="btn btn-white mt-3">Learn About Our Mission</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     WHY CHOOSE US
+     ═══════════════════════════════════════════════════════════ -->
+<section class="section bg-light">
+  <div class="container">
+    <div class="text-center reveal">
+      <span class="section-label">Why HomeFinder</span>
+      <h2 class="section-title">The Smarter Way to Find a Home</h2>
+      <p class="section-sub">We combine technology, trust, and sustainability to give you the best real estate experience in India.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon"><i data-lucide="shield-check"></i></div>
+        <h3>100% Verified Listings</h3>
+        <p>Every property is physically verified by our team. No fake listings, no fraud — only genuine opportunities for buyers and renters.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon"><i data-lucide="search"></i></div>
+        <h3>Smart Search &amp; Filters</h3>
+        <p>Filter by city, budget, type, bedrooms, and more. Our powerful search engine finds exactly what you need in seconds.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon"><i data-lucide="star"></i></div>
+        <h3>Premium-Friendly Focus</h3>
+        <p>We prioritise green buildings, solar-powered homes, and properties near parks and natural spaces for a healthier lifestyle.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon"><i data-lucide="users"></i></div>
+        <h3>Direct Agent Connect</h3>
+        <p>Skip the middlemen. Contact property agents directly through our platform and get faster, honest responses.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon"><i data-lucide="heart"></i></div>
+        <h3>Save Your Favourites</h3>
+        <p>Create a free account and save properties you love. Compare them later and never miss out on a great deal.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon"><i data-lucide="smartphone"></i></div>
+        <h3>Works on Any Device</h3>
+        <p>HomeFinder is fully responsive. Browse properties on your phone, tablet, or laptop — smooth experience everywhere.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     TESTIMONIALS
+     ═══════════════════════════════════════════════════════════ -->
+<section class="section">
+  <div class="container">
+    <div class="text-center reveal">
+      <span class="section-label">Happy Customers</span>
+      <h2 class="section-title">What Our Users Say</h2>
+      <p class="section-sub">Thousands of families have found their dream home through HomeFinder.</p>
+    </div>
+
+    <div class="testimonials-grid">
+      <div class="testimonial-card reveal">
+        <div class="stars">★★★★★</div>
+        <div class="quote-icon">"</div>
+        <p class="testimonial-text">HomeFinder made finding a flat in Bengaluru so easy! The filters are powerful and I could contact the agent directly without any broker fees. Found my dream apartment in just 3 days!</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">A</div>
+          <div>
+            <div class="author-name">Ananya Sharma</div>
+            <div class="author-role">Software Engineer, Bengaluru</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card reveal">
+        <div class="stars">★★★★★</div>
+        <div class="quote-icon">"</div>
+        <p class="testimonial-text">The eco-friendly listings section is unique! I specifically wanted a green-certified apartment near a park, and HomeFinder had exactly that. Great platform for conscious homebuyers.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">R</div>
+          <div>
+            <div class="author-name">Rohit Menon</div>
+            <div class="author-role">Environmental Consultant, Kochi</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card reveal">
+        <div class="stars">★★★★★</div>
+        <div class="quote-icon">"</div>
+        <p class="testimonial-text">As a real estate agent, listing properties on HomeFinder has been a game-changer. The dashboard is easy to use, and I get genuine inquiries from serious buyers. Highly recommended!</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">P</div>
+          <div>
+            <div class="author-name">Priya Verma</div>
+            <div class="author-role">Real Estate Agent, Mumbai</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     NEWSLETTER
+     ═══════════════════════════════════════════════════════════ -->
+<section class="newsletter-section">
+  <div class="container reveal">
+    <h2>Get Property Alerts in Your City</h2>
+    <p>Subscribe to receive new listings, price drops, and market updates directly in your inbox.</p>
+    <div class="newsletter-form">
+      <input type="email" placeholder="Enter your email address...">
+      <button class="btn btn-accent btn-lg">Subscribe</button>
+    </div>
+    <p style="font-size:.8rem;color:rgba(255,255,255,.5);margin-top:1rem;">No spam. Unsubscribe anytime. We respect your privacy.</p>
+  </div>
+</section>
+
+{% endblock %}
