@@ -272,5 +272,16 @@ def page_not_found(e): return render_template('404.html'), 404
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True, port=5000)
+
+    # Production-friendly Flask startup:
+    # - host=0.0.0.0 allows hosted platforms to reach the app
+    # - debug=False disables the development debugger
+    # - use_reloader=False prevents the Flask reloader from causing
+    #   signal-related errors in hosted environments
+    app.run(
+        host='0.0.0.0',
+        port=int(os.environ.get('PORT', 5000)),
+        debug=False,
+        use_reloader=False
+    )
 
