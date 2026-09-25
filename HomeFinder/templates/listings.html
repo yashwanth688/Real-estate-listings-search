@@ -1,129 +1,183 @@
 {% extends 'base.html' %}
-{% block title %}{{ title|default('All Properties') }} — HomeFinder{% endblock %}
+{% block title %}{% if title %}{{ title }}{% else %}Properties for Sale & Rent in India{% endif %} - HomeFinder{% endblock %}
 
 {% block content %}
+<div class="container section-sm">
 
-<div class="page-header">
-  <div class="container">
-    <h1>{{ title|default('Browse Properties') }}</h1>
-    <p>Find the perfect property across India's top cities.</p>
+  <!-- Page Header -->
+  <div class="d-flex justify-between align-center mb-4">
+    <div>
+      <h1 class="section-title" style="margin-bottom:.25rem">
+        {% if title %}{{ title }}{% else %}Browse Properties{% endif %}
+      </h1>
+      <p class="text-muted">
+        {% if budget_miss %}
+          <span style="color:var(--danger);">No properties found exactly matching your criteria.</span>
+        {% elif total_count is defined %}
+          <strong>{{ total_count }}</strong> properties found
+          {% if filters.location %} in <strong>{{ filters.location }}</strong>{% endif %}
+        {% endif %}
+      </p>
+    </div>
+    {% if not title %}
+    <a href="{{ url_for('listings') }}" class="btn btn-outline btn-sm">Reset Filters</a>
+    {% endif %}
   </div>
-</div>
 
-<div class="container section">
-  <div class="listings-layout">
+  <div class="form-row" style="align-items: flex-start; flex-wrap: wrap;">
 
-    <!-- ── Sidebar Filters ─────────────────────────────────── -->
-    <aside class="filters-sidebar">
-      <div class="filter-card">
-        <h3><i data-lucide="sliders-horizontal" style="width:18px;height:18px;display:inline;margin-right:6px;"></i>Filter Results</h3>
+    <!-- ── Filter Sidebar ─────────────────────────────────── -->
+    {% if not title %}
+    <aside style="flex: 0 0 300px; background: var(--white); padding: 1.5rem; border-radius: var(--r-md); box-shadow: var(--shadow-sm); border: 1px solid var(--border); position: sticky; top: 90px;">
+      <form action="{{ url_for('listings') }}" method="GET" id="filterForm">
+        
+        <div class="form-group">
+          <label>Location / City</label>
+          <input type="text" name="location" list="city-suggestions" value="{{ filters.location or '' }}" placeholder="Mumbai, Gachibowli...">
+          <datalist id="city-suggestions">
+            <option value="Mumbai"><option value="Delhi"><option value="Bengaluru">
+            <option value="Hyderabad"><option value="Chennai"><option value="Pune">
+            <option value="Kolkata"><option value="Ahmedabad"><option value="Visakhapatnam">
+            <option value="Chandigarh"><option value="Jaipur"><option value="Lucknow">
+            <option value="Gachibowli"><option value="Andheri"><option value="Whitefield">
+            <option value="Koramangala"><option value="Banjara Hills"><option value="Powai">
+          </datalist>
+        </div>
 
-        <form action="{{ url_for('listings') }}" method="GET">
-
-          <div class="form-group">
-            <label>Keyword</label>
-            <input type="text" name="keyword" value="{{ request.args.get('keyword','') }}" placeholder="e.g. modern, pool...">
+        <div class="form-group">
+          <label>Listing Type</label>
+          <div class="d-flex gap-2 mt-1">
+            <label style="font-weight:normal"><input type="radio" name="status" value="" {% if not filters.status %}checked{% endif %}> All</label>
+            <label style="font-weight:normal"><input type="radio" name="status" value="Sale" {% if filters.status == 'Sale' %}checked{% endif %}> Buy</label>
+            <label style="font-weight:normal"><input type="radio" name="status" value="Rent" {% if filters.status == 'Rent' %}checked{% endif %}> Rent</label>
           </div>
+        </div>
 
-          <div class="form-group">
-            <label>City / Location</label>
-            <input type="text" name="location" value="{{ request.args.get('location','') }}" placeholder="Mumbai, Delhi...">
+        <div class="form-group">
+          <label>Property Type</label>
+          <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:0.5rem">
+            {% for pt in ['Apartment','House','Villa','Plot','Commercial'] %}
+            <label style="font-weight:normal">
+              <input type="radio" name="type" value="{{ pt }}" {% if filters.type == pt %}checked{% endif %}>
+              {{ pt }}
+            </label>
+            {% endfor %}
+            <label style="font-weight:normal"><input type="radio" name="type" value="" {% if not filters.type %}checked{% endif %}> All Types</label>
           </div>
+        </div>
 
-          <div class="form-group">
-            <label>Property Type</label>
-            <select name="type">
-              <option value="">All Types</option>
-              {% for t in ['Apartment','House','Villa','Commercial'] %}
-                <option value="{{ t }}" {% if request.args.get('type')==t %}selected{% endif %}>{{ t }}</option>
-              {% endfor %}
-            </select>
+        <div class="form-group">
+          <label>Budget (&#x20B9;)</label>
+          <div class="d-flex gap-2 mt-1">
+            <input type="number" name="min_price" value="{{ filters.min_price or '' }}" placeholder="Min">
+            <input type="number" name="max_price" value="{{ filters.max_price or '' }}" placeholder="Max">
           </div>
+        </div>
 
-          <div class="form-group">
-            <label>Status</label>
-            <select name="status">
-              <option value="">Any</option>
-              <option value="Sale" {% if request.args.get('status')=='Sale' %}selected{% endif %}>For Sale</option>
-              <option value="Rent" {% if request.args.get('status')=='Rent' %}selected{% endif %}>For Rent</option>
-            </select>
+        <div class="form-group">
+          <label>Bedrooms</label>
+          <div class="d-flex gap-2 mt-1" style="flex-wrap: wrap;">
+            {% for b in ['', '1', '2', '3', '4', '5'] %}
+            <label style="font-weight:normal"><input type="radio" name="bedrooms" value="{{ b }}" {% if filters.bedrooms == b or (not filters.bedrooms and not b) %}checked{% endif %}> {{ b if b else 'Any' }}</label>
+            {% endfor %}
           </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Amenities</label>
+          <select name="amenity" class="form-control">
+            <option value="">Any</option>
+            <option value="Parking" {% if filters.amenity == 'Parking' %}selected{% endif %}>Parking</option>
+            <option value="Swimming Pool" {% if filters.amenity == 'Swimming Pool' %}selected{% endif %}>Swimming Pool</option>
+            <option value="Gym" {% if filters.amenity == 'Gym' %}selected{% endif %}>Gym</option>
+            <option value="Security" {% if filters.amenity == 'Security' %}selected{% endif %}>Security</option>
+          </select>
+        </div>
 
-          <div class="form-row">
-            <div class="form-group half">
-              <label>Min &#x20B9;</label>
-              <input type="number" name="min_price" value="{{ request.args.get('min_price','') }}" placeholder="0">
-            </div>
-            <div class="form-group half">
-              <label>Max &#x20B9;</label>
-              <input type="number" name="max_price" value="{{ request.args.get('max_price','') }}" placeholder="Any">
-            </div>
-          </div>
+        <div class="form-group">
+          <label>Sort By</label>
+          <select name="sort" onchange="this.form.submit()">
+            <option value="newest" {% if filters.sort == 'newest' or not filters.sort %}selected{% endif %}>Newest First</option>
+            <option value="price_asc" {% if filters.sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+            <option value="price_desc" {% if filters.sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+            <option value="area_asc" {% if filters.sort == 'area_asc' %}selected{% endif %}>Area: Low to High</option>
+            <option value="area_desc" {% if filters.sort == 'area_desc' %}selected{% endif %}>Area: High to Low</option>
+          </select>
+        </div>
 
-          <div class="form-group">
-            <label>Sort By</label>
-            <select name="sort">
-              <option value="newest" {% if request.args.get('sort','newest')=='newest' %}selected{% endif %}>Newest First</option>
-              <option value="price_asc" {% if request.args.get('sort')=='price_asc' %}selected{% endif %}>Price: Low to High</option>
-              <option value="price_desc" {% if request.args.get('sort')=='price_desc' %}selected{% endif %}>Price: High to Low</option>
-            </select>
-          </div>
-
-          <button type="submit" class="btn btn-primary btn-block">
-            <i data-lucide="search"></i> Apply Filters
-          </button>
-          <a href="{{ url_for('listings') }}" class="btn btn-outline btn-block mt-2" style="justify-content:center;">
-            <i data-lucide="x"></i> Clear All
-          </a>
-        </form>
-      </div>
+        <button type="submit" class="btn btn-primary btn-block mt-4">Apply Filters</button>
+      </form>
     </aside>
+    {% endif %}
 
-    <!-- ── Results ─────────────────────────────────────────── -->
-    <div class="listings-content">
-      <div class="results-meta">
-        <i data-lucide="home" style="width:15px;height:15px;display:inline;"></i>
-        Showing <strong>{{ properties|length }}</strong> properties
-        {% if request.args.get('location') %} in <strong>{{ request.args.get('location') }}</strong>{% endif %}
+    <!-- ── Results ────────────────────────────────────────── -->
+    <div style="flex: 1;">
+
+      {% if budget_miss %}
+      <!-- No exact results -->
+      <div style="text-align:center; padding: 3rem; background: var(--white); border-radius: var(--r-md); border: 1px dashed var(--border); margin-bottom: 2rem;">
+        <i data-lucide="search-x" style="width: 48px; height: 48px; color: var(--text-light); margin-bottom: 1rem;"></i>
+        <h3>No Properties Found Within Budget</h3>
+        <p class="text-muted mt-2">We couldn't find properties matching <strong>{{ filters.location or 'your location' }}</strong> within <strong>&#x20B9;{{ '{:,.0f}'.format(filters.max_price | float) }}</strong>.</p>
+        <div class="mt-4">
+          <a href="{{ url_for('listings', location=filters.location, type=filters.type) }}" class="btn btn-primary">Remove Budget Filter</a>
+        </div>
       </div>
 
+      {% if suggestions %}
+      <div class="mb-4">
+        <h4 style="color: var(--accent); display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="lightbulb"></i> Suggested Properties Near Your Budget</h4>
+        <p class="text-muted text-sm mb-3">These properties are slightly above your budget but may interest you.</p>
+        <div class="property-grid">
+          {% for p in suggestions %}
+          {% include 'partials/property_card.html' %}
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% elif properties %}
       <div class="property-grid">
         {% for p in properties %}
-        <div class="property-card">
-          <div class="property-image">
-            <img src="{{ p.image_url }}" alt="{{ p.title }}"
-                 onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80'">
-            <span class="badge badge-{{ p.status|lower }}">{{ p.status }}</span>
-            <div class="premium-tag"><i data-lucide="star"></i> Premium</div>
-          </div>
-          <div class="property-content">
-            <div class="property-price">{{ p.price | currency }}</div>
-            <h3 class="property-title">
-              <a href="{{ url_for('property_details', id=p.id) }}">{{ p.title }}</a>
-            </h3>
-            <p class="property-location"><i data-lucide="map-pin"></i> {{ p.location }}</p>
-            <div class="property-meta">
-              <span><i data-lucide="bed"></i> {{ p.bedrooms }}</span>
-              <span><i data-lucide="bath"></i> {{ p.bathrooms }}</span>
-              <span><i data-lucide="maximize"></i> {{ p.area }} sqft</span>
-            </div>
-          </div>
-          <div class="property-footer">
-            <span class="badge badge-outline">{{ p.property_type }}</span>
-            <a href="{{ url_for('property_details', id=p.id) }}" class="btn btn-primary btn-sm">Details</a>
-          </div>
-        </div>
-        {% else %}
-        <div class="empty-state">
-          <i data-lucide="search-x" class="empty-icon"></i>
-          <h3>No properties found</h3>
-          <p>Try different keywords or remove some filters to see more results.</p>
-          <a href="{{ url_for('listings') }}" class="btn btn-primary mt-3">Clear All Filters</a>
-        </div>
+        {% include 'partials/property_card.html' %}
         {% endfor %}
       </div>
-    </div>
 
+      <!-- Pagination -->
+      {% if pagination and pagination.pages > 1 %}
+      <div class="d-flex justify-between align-center mt-6">
+        <div>
+          {% if pagination.has_prev %}
+            <a href="{{ url_for('listings', page=pagination.prev_num, **filters) }}" class="btn btn-outline btn-sm">&laquo; Prev</a>
+          {% endif %}
+        </div>
+        <div class="d-flex gap-2">
+          {% for num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if num %}
+              <a href="{{ url_for('listings', page=num, **filters) }}" class="btn btn-sm {% if num == pagination.page %}btn-primary{% else %}btn-outline{% endif %}">{{ num }}</a>
+            {% else %}
+              <span style="padding: 0.4rem 0.8rem; color: var(--text-muted);">…</span>
+            {% endif %}
+          {% endfor %}
+        </div>
+        <div>
+          {% if pagination.has_next %}
+            <a href="{{ url_for('listings', page=pagination.next_num, **filters) }}" class="btn btn-outline btn-sm">Next &raquo;</a>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% else %}
+      <div style="text-align:center; padding: 4rem; background: var(--white); border-radius: var(--r-md); border: 1px dashed var(--border);">
+        <i data-lucide="home-off" style="width: 48px; height: 48px; color: var(--text-light); margin-bottom: 1rem;"></i>
+        <h3>No Properties Found</h3>
+        <p class="text-muted mt-2">Try adjusting your filters or search for a different location.</p>
+        <a href="{{ url_for('listings') }}" class="btn btn-primary mt-4">Browse All Properties</a>
+      </div>
+      {% endif %}
+
+    </div>
   </div>
 </div>
 {% endblock %}

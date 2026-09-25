@@ -125,29 +125,7 @@
                 <h3 class="mb-4">Similar Properties</h3>
                 <div class="property-grid">
                     {% for p in similar %}
-                    <div class="property-card">
-                        <div class="property-image">
-                            <img src="{{ p.image_url }}" alt="{{ p.title }}"
-                                 onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80'">
-                            <span class="badge badge-{{ p.status|lower }}">{{ p.status }}</span>
-                        </div>
-                        <div class="property-content">
-                            <div class="property-price">{{ p.price | currency }}</div>
-                            <h3 class="property-title">
-                                <a href="{{ url_for('property_details', id=p.id) }}">{{ p.title }}</a>
-                            </h3>
-                            <p class="property-location"><i data-lucide="map-pin"></i> {{ p.location }}</p>
-                            <div class="property-meta">
-                                <span><i data-lucide="bed"></i> {{ p.bedrooms }}</span>
-                                <span><i data-lucide="bath"></i> {{ p.bathrooms }}</span>
-                                <span><i data-lucide="maximize"></i> {{ p.area }} sqft</span>
-                            </div>
-                        </div>
-                        <div class="property-footer">
-                            <span>{{ p.property_type }}</span>
-                            <a href="{{ url_for('property_details', id=p.id) }}" class="btn btn-outline btn-sm">View</a>
-                        </div>
-                    </div>
+                        {% include 'partials/property_card.html' %}
                     {% endfor %}
                 </div>
             </div>

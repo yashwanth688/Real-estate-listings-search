@@ -1,0 +1,34 @@
+<div class="property-card">
+  <div class="property-image">
+    <img src="{{ p.image_url }}" alt="{{ p.title }}"
+         onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80'">
+    <span class="badge badge-{{ p.status|lower }}">{{ p.status }}</span>
+    {% if current_user %}
+    <form action="{{ url_for('toggle_favorite', id=p.id) }}" method="POST" class="card-fav-form" style="position: absolute; top: 10px; right: 10px; z-index: 10;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="next" value="{{ request.url }}">
+      <button type="submit" class="btn btn-sm btn-white {% if user_favs and p.id in user_favs %}text-danger{% endif %}" style="padding: 0.4rem; border-radius: 50%; box-shadow: var(--shadow-sm);" title="{% if user_favs and p.id in user_favs %}Remove from Favourites{% else %}Save to Favourites{% endif %}">
+        <i data-lucide="heart" {% if user_favs and p.id in user_favs %}fill="currentColor"{% endif %}></i>
+      </button>
+    </form>
+    {% endif %}
+  </div>
+  <div class="property-content">
+    <div class="property-price">{{ p.price | currency }}
+      {% if p.status == 'Rent' %}<span class="text-muted text-sm">/mo</span>{% endif %}
+    </div>
+    <h3 class="property-title">
+      <a href="{{ url_for('property_details', id=p.id) }}">{{ p.title }}</a>
+    </h3>
+    <p class="property-location"><i data-lucide="map-pin"></i> {{ p.location }}</p>
+    <div class="property-meta">
+      {% if p.bedrooms %}<span><i data-lucide="bed"></i> {{ p.bedrooms }} Beds</span>{% endif %}
+      {% if p.bathrooms %}<span><i data-lucide="bath"></i> {{ p.bathrooms }} Baths</span>{% endif %}
+      <span><i data-lucide="maximize"></i> {{ p.area }} sqft</span>
+    </div>
+  </div>
+  <div class="property-footer">
+    <span class="badge badge-outline">{{ p.property_type }}</span>
+    <a href="{{ url_for('property_details', id=p.id) }}" class="btn btn-primary btn-sm">View Details</a>
+  </div>
+</div>

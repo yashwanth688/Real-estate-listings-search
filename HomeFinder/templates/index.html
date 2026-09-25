@@ -38,7 +38,12 @@
         <div class="search-form-row">
           <div class="search-field">
             <label>Location / City</label>
-            <input type="text" name="location" placeholder="Mumbai, Delhi, Bengaluru...">
+            <input type="text" name="location" list="city-suggestions-hero" placeholder="Mumbai, Delhi, Bengaluru...">
+            <datalist id="city-suggestions-hero">
+              <option value="Mumbai"><option value="Delhi"><option value="Bengaluru">
+              <option value="Hyderabad"><option value="Chennai"><option value="Pune">
+              <option value="Kolkata"><option value="Ahmedabad"><option value="Visakhapatnam">
+            </datalist>
           </div>
           <div class="search-field">
             <label>Property Type</label>
@@ -93,11 +98,11 @@
   <div class="container">
     <div class="stats-grid">
       <div class="stat-box">
-        <div class="num counter" data-target="54">0</div>
+        <div class="num counter" data-target="{{ stats.total_listings }}">0</div>
         <div class="lbl">Properties Listed</div>
       </div>
       <div class="stat-box">
-        <div class="num counter" data-target="10">0</div>
+        <div class="num counter" data-target="{{ stats.total_cities }}">0</div>
         <div class="lbl">Cities Covered</div>
       </div>
       <div class="stat-box">
@@ -105,7 +110,7 @@
         <div class="lbl">Happy Families</div>
       </div>
       <div class="stat-box">
-        <div class="num counter" data-target="15">0</div>
+        <div class="num counter" data-target="{{ stats.total_agents }}">0</div>
         <div class="lbl">Trusted Agents</div>
       </div>
     </div>
@@ -170,30 +175,7 @@
 
     <div class="property-grid">
       {% for p in properties %}
-      <div class="property-card reveal">
-        <div class="property-image">
-          <img src="{{ p.image_url }}" alt="{{ p.title }}"
-               onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80'">
-          <span class="badge badge-{{ p.status|lower }}">{{ p.status }}</span>
-          <div class="premium-tag"><i data-lucide="star"></i> Premium Property</div>
-        </div>
-        <div class="property-content">
-          <div class="property-price">{{ p.price | currency }}</div>
-          <h3 class="property-title">
-            <a href="{{ url_for('property_details', id=p.id) }}">{{ p.title }}</a>
-          </h3>
-          <p class="property-location"><i data-lucide="map-pin"></i> {{ p.location }}</p>
-          <div class="property-meta">
-            <span><i data-lucide="bed"></i> {{ p.bedrooms }} Beds</span>
-            <span><i data-lucide="bath"></i> {{ p.bathrooms }} Baths</span>
-            <span><i data-lucide="maximize"></i> {{ p.area }} sqft</span>
-          </div>
-        </div>
-        <div class="property-footer">
-          <span class="badge badge-outline">{{ p.property_type }}</span>
-          <a href="{{ url_for('property_details', id=p.id) }}" class="btn btn-primary btn-sm">View Details</a>
-        </div>
-      </div>
+        {% include 'partials/property_card.html' %}
       {% else %}
       <div class="empty-state" style="grid-column:1/-1">
         <p>No properties available yet.</p>
